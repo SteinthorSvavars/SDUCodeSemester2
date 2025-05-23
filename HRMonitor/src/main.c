@@ -12,22 +12,21 @@
 #include <util/delay.h>
 
 #include "usart.h"
+#include "HR.h"
+
 
 int main(void) {  
-
-  int input;  
+  
+  //int input;  
 
   uart_init(); // open the communication to the microcontroller
+  HR_init();
   io_redirect(); // redirect input and output to the communication
 
-    
+   char res = HR_Read();
   while(1) {
 		
-	  printf("Type in a number \n");
-    scanf("%d", &input);
-    printf("The number you typed is %d is %x in hexadecimal \n", input, input);
-	  _delay_ms(1000)	;
-
+	  printf("%s", &res);
   }
   
   return 0;
