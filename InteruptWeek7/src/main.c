@@ -15,8 +15,8 @@ void setup() {
     PORTC |= (1 << PC0); // Enable pull-up resistor
 
     // Set PD5 as output (LED)
-    //DDRD |= (1 << PD5);
-    DDRD |= _BV(DDD4);
+    DDRD |= (1 << PD5);
+    //DDRD |= _BV(DDD4);
 
     // Save initial state
     prev_state = PINC & (1 << PC0);
@@ -29,14 +29,14 @@ void setup() {
 }
 
 ISR(PCINT1_vect) {
-    //uint8_t current = PINC & (1 << PC0);
-    //if (current != prev_state) {
+    uint8_t current = PINC & (1 << PC0);
+    if (current != prev_state) {
         // Pin changed
-        //PORTD ^= (1 << PD5);  // Toggle LED
-        //prev_state = current;
+        PORTD ^= (1 << PD5);  // Toggle LED
+        prev_state = current;
     
      _delay_ms(150);
-      if(LED1 == 0){
+      /*if(LED1 == 0){
         PORTD |= _BV(PORTD4);
       }
       else if(LED1 == 1){
@@ -47,8 +47,8 @@ ISR(PCINT1_vect) {
       }
       else if(LED1 == 1){
         LED1 = 0;
-      }
-    //}
+      }*/
+    }
 }
 
 int main() {
