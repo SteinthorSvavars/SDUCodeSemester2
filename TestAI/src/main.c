@@ -249,6 +249,27 @@ void USART_SendString(const char *str) {
     }
 }
 
+void USART_ReceiveString(char *buffer, uint8_t buffer_size) {
+    uint8_t i = 0;
+    char ch;
+    
+    // Read characters one by one
+    while (1) {
+        ch = USART_Receive();
+        
+        // If a newline or carriage return is received, terminate the string.
+        if (ch == '\n' || ch == '\r') {
+            buffer[i] = '\0';
+            break;
+        }
+        
+        // Only add character if there is space (reserve space for the null-terminator)
+        if (i < buffer_size - 1) {
+            buffer[i++] = ch;
+        }
+    }
+}
+
 // ------------------------- LCD Placeholder Routines -------------------------
 
 // Clear the LCD display.
