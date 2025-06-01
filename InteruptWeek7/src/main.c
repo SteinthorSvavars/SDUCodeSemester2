@@ -16,7 +16,7 @@ void setup() {
 
     // Set PD5 as output (LED)
     DDRD |= (1 << PD5);
-    //DDRD |= _BV(DDD4);
+    DDRD |= _BV(DDD4);
 
     // Save initial state
     prev_state = PINC & (1 << PC0);
@@ -33,21 +33,9 @@ ISR(PCINT1_vect) {
     if (current != prev_state) {
         // Pin changed
         PORTD ^= (1 << PD5);  // Toggle LED
+        PORTD ^= (1 << PD4);  // Toggle LED
         prev_state = current;
-    
-     _delay_ms(150);
-      /*if(LED1 == 0){
-        PORTD |= _BV(PORTD4);
-      }
-      else if(LED1 == 1){
-        PORTD &= ~_BV(PORTD4);
-      }
-      if(LED1 == 0){
-        LED1 = 1;
-      }
-      else if(LED1 == 1){
-        LED1 = 0;
-      }*/
+        _delay_ms(150);
     }
 }
 
