@@ -22,7 +22,7 @@ volatile int counter = 0;
 void timers(void)
 {
   TCCR0A |= (1 << WGM01);
-  OCR0A = 0xF9;
+  OCR0A = 249;
   TIMSK0 |= (1<<OCIE0A);
   sei();
   TCCR0B |= (1 << CS01) | (1 << CS00);
@@ -53,3 +53,6 @@ ISR (TIMER0_COMPA_vect)
   }
   
 }
+
+
+

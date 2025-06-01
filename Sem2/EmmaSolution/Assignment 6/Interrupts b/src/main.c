@@ -17,15 +17,17 @@
 #include "i2cmaster.h"
 #include "lcd.h"
 
-volatile int counter = 0;
+volatile unsigned int counter = 0;
 
-void timers(void)
+void timers(unsigned int time)
 {
   TCCR0A |= (1 << WGM01);
   OCR0A = 0xF9;
-  TIMSK0 |= (1<<OCIE0A);
+  TIMSK0 |= (1 << OCIE0A);
   sei();
   TCCR0B |= (1 << CS01) | (1 << CS00);
+  counter=time;
+  PORTD |= (1 << PIND4) | (1 << PIND5) | (1 << PIND6) | (1 << PIND7);
 }
 
 int main(void)
@@ -35,21 +37,31 @@ int main(void)
   DDRC = 0xF0;
   PORTC =0x3F;
 
-  timers();
+  
+  
 
   while (1)
   {
+    if (PINC == 0b00110111)
+  {
+    timers(2000);
+  }
   }
   return 0;
 }
 
+
 ISR (TIMER0_COMPA_vect)
 {
-  counter ++;
-  if (counter == 500)
-  {
-    PORTD ^= (1 << PIND4) ^ (1 << PIND5) ^ (1 << PIND6) ^ (1 << PIND7);
-    counter = 0;
+  
+  if(counter)
+    counter--;
+  else {
+    PORTD &= ~((1 << PIND4) | (1 << PIND5) | (1 << PIND6) | (1 << PIND7));
+    cli();
   }
   
 }
+
+
+
