@@ -29,7 +29,7 @@
 //#define F_CPU 16000000UL    // Define CPU clock as 16MHz
 #define BAUD 19200           // Desired baud rate
 #define MYUBRR (F_CPU/16/BAUD-1)
-
+int time = 0;
 int number;
 volatile unsigned int counter = 0;
 
@@ -92,14 +92,14 @@ void USART_ReceiveString(char *buffer, uint8_t buffer_size) {
     }
 }
 
-void timers(unsigned int time)
+void timers(void)
 {
   TCCR0A |= (1 << WGM01);
   OCR0A = 0xF9;
   TIMSK0 |= (1 << OCIE0A);
   sei();
   TCCR0B |= (1 << CS01) | (1 << CS00);
-  counter=time;
+  counter = 0;
   //PORTD |= (1 << PIND4) | (1 << PIND5) | (1 << PIND6) | (1 << PIND7);
 }
 
@@ -158,31 +158,31 @@ int main(void) {
         receivedChar = USART_Receive();
         LCD_write_char(receivedChar); // Display received char
         if (receivedChar == '1') {
-            timers(1000);
+            counter = 1000;
         }
         else if (receivedChar == '2') {
-            timers(2000);
+            time = 2000;
         }
         else if (receivedChar == '3') {
-            timers(3000);
+            time = 3000;
         }
         else if (receivedChar == '4') {
-            timers(4000);
+            time = 4000;
         }
         else if (receivedChar == '5') {
-            timers(5000);
+            time = 5000;
         }
         else if (receivedChar == '6') {
-            timers(6000);
+            time = 6000;
         }
         else if (receivedChar == '7') {
-            timers(7000);
+            time = 7000;
         }
         else if (receivedChar == '8') {
-            timers(8000);
+            time = 8000;
         }
         else if (receivedChar == '9') {
-            timers(9000);
+            time = 9000;
         }
         USART_SendString("\r\n");
         // Create a message to echo the received numbers.
@@ -194,11 +194,12 @@ int main(void) {
 
 ISR (TIMER0_COMPA_vect)
 {
-  if(counter)
-    counter--;
-  else {
+  if(counter == time){
     PORTD &= ~((1 << PIND4) | (1 << PIND5) | (1 << PIND6) | (1 << PIND7));
+    counter = 0;
     cli();
   }
-  
+  else {
+    counter++;  
+  }
 }
