@@ -8,7 +8,7 @@
 #include "lcd.h"
 
 float adc_read(uint8_t adc_channel); 
-
+int counter
 int main(void) {  
 
   i2c_init();
@@ -30,7 +30,7 @@ int main(void) {
     {
       adc_result = adc_read(i);
       LCD_set_cursor(0,i);
-      printf("ADC %hhd: %4.0f mV", i,  adc_result*4.8828125);
+      printf("ADC %hhd: %4.0f mV", i,  adc_result*4.8828125, count);
     }
   }
   return 0;
