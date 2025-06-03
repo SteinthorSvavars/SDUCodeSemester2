@@ -23,7 +23,7 @@
 
 void usart_init(void);
 
-volatile int timer=0; // make variable for timer
+volatile int timer = 0; // make variable for timer
 float adc_read(uint8_t adc_channel); 
 void usart_send(unsigned char data);
 unsigned int EEPROMAddr=0; // variable for address
@@ -33,6 +33,7 @@ int num = 0;
 int place = 0;
 int count = 0;
 int teljari = 0;
+int home = 0;
 
 void init_interrupts() // set up timer
 {
@@ -47,7 +48,7 @@ void init_interrupts() // set up timer
 int main(void) {  
 
   DDRC = 0xF0; // set data direction for port C pins, 0-3 as input (i.e. the buttons)
-  PORTC = 0x30; // set pull-up resistor for port C
+  PORTC = 0x34; // set pull-up resistor for port C
   DDRD = 0xFF; // set data direction for port D, all output 
   PORTD= 0x00; // set output for port D (none)
   DDRB |= (1 << PB5);
@@ -66,23 +67,15 @@ int main(void) {
   EEPROMAddr=0; //set addr for the thing to write to
   place=eeprom_read_float((float *)EEPROMAddr); //write max temp
   while(1) {
-    /*
-    //for(i=0;i<4;i++)
-    //{
-      LCD_set_cursor(0,1);
-      printf("%d",teljari);
-      //LCD_set_cursor(0,1);
-      //printf("ADC %hhd: %4.0f mV", 0,  adc_result*4.8828125);
-    //}
-    */
   }
     return 0;
 }
 
 ISR(USART_RX_vect){
   volatile unsigned char received_data = UDR0;
-  if (received_data == 1) {PORTB |= (1 << PB5); count = 1;} //place++; //PORTD = 0b00010000;
-  if (received_data == 2) {PORTB &= ~(1 << PB5); count = 0;}
+  if (received_data == 1) {PORTB |= (1 << PB5); count = 1; home = 0;} //place++; //PORTD = 0b00010000;
+  if (received_data == 2) {PORTB &= ~(1 << PB5); count = 0; home = 0;}
+  if (received_data == 3) {home = 1; count = 0;} //Go home
 }
 
 void usart_send( unsigned char data){
@@ -107,11 +100,15 @@ ISR(TIMER2_COMPA_vect) // ISR for the timer ticking
       LCD_set_cursor(1,0);
     }
     printf("s");
-    if(count == 1){
+    if(count == 1 && home == 0){
       place++;
     }
-    else{
-      count = count;
+    else if(count == 0 && home == 1){
+      place--;
+    }
+    if(place < 10){
+      LCD_set_cursor(9,0);
+      printf(" ");
     }
     LCD_set_cursor(8,0);
     printf("%d",place);
@@ -122,6 +119,8 @@ ISR(TIMER2_COMPA_vect) // ISR for the timer ticking
     if(place > 0){
       LCD_set_cursor(place-1,1);
       printf(" ");
+      LCD_set_cursor(place+1,1);
+      printf(" ");
     }
     uint16_t adc_result;
     adc_result = adc_read(0);
@@ -130,8 +129,18 @@ ISR(TIMER2_COMPA_vect) // ISR for the timer ticking
         usart_send(place);
         adc_result = 0;
       }
-    EEPROMAddr=0;
-    eeprom_write_float((float *)EEPROMAddr, place);
+    if(place > 0 && home == 0){
+      EEPROMAddr=0;
+      eeprom_write_float((float *)EEPROMAddr, place);
+    }
+    else if(place == 0){
+      EEPROMAddr=0;
+      eeprom_write_float((float *)EEPROMAddr, place);
+      home = 0;
+      count = 0;
+      LCD_set_cursor(place+1,1);
+      printf(" ");
+    }
     timer=0;
   }
 }
