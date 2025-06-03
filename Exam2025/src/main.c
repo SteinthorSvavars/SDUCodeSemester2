@@ -11,10 +11,12 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
+#include <avr/eeprom.h>
 
 
 #include "i2cmaster.h"
 #include "lcd.h"
+
 
 #define BAUDRATE 38400
 #define BAUD_PRESCALER (((F_CPU / (BAUDRATE * 16UL))) - 1)
@@ -24,6 +26,9 @@ void usart_init(void);
 volatile int timer=0; // make variable for timer
 float adc_read(uint8_t adc_channel); 
 void usart_send(unsigned char data);
+unsigned int EEPROMAddr=0; // variable for address
+
+float placement;
 int num = 0;
 int place = 0;
 int count = 0;
@@ -57,7 +62,9 @@ int main(void) {
   ADCSRA = (1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0)|(1<<ADEN); //set prescaler to 128 and turn on the ADC module
 
   UCSR0B |= (1<<RXCIE0);
-
+  
+  EEPROMAddr=0; //set addr for the thing to write to
+  place=eeprom_read_float((float *)EEPROMAddr); //write max temp
   while(1) {
     /*
     //for(i=0;i<4;i++)
@@ -123,6 +130,8 @@ ISR(TIMER2_COMPA_vect) // ISR for the timer ticking
         usart_send(place);
         adc_result = 0;
       }
+    EEPROMAddr=0;
+    eeprom_write_float((float *)EEPROMAddr, place);
     timer=0;
   }
 }
